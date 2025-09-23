@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍓 Sisyphus Dashboard</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+<div class="main-container">
+  <div class="header">
+    <div class="header-top">
+      <h1>SISYPHUS DASHBOARD</h1>
+      <button id="logoutBtn" class="logout-btn" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+    <div class="status-bar">
+      <div class="status-badge">
+        <i class="fas fa-server"></i>
+        <span id="hostnameDisplay">Pi5 Server</span>
+      </div>
+      <div class="status-badge" id="diskBadge">
+        <i class="fas fa-hdd"></i>
+        <span id="diskDisplay">Disk: --%</span>
+      </div>
+      <div class="status-badge" id="memBadge">
+        <i class="fas fa-memory"></i>
+        <span id="memDisplay">RAM: --%</span>
+      </div>
+      <div class="status-badge" id="tempBadge">
+        <i class="fas fa-thermometer-half"></i>
+        <span id="tempDisplay">--°C</span>
+      </div>
+      <div class="status-badge" id="uptimeBadge">
+        <i class="fas fa-clock"></i>
+        <span id="uptimeDisplay">--:--:--:--</span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="grid-container">
+    <!-- CPU Performance Card (Large - Left) -->
+    <div class="card card-large">
+      <div class="card-header">
+        <h2>
+          <div class="card-icon cpu-icon"><i class="fas fa-microchip"></i></div>
+          CPU Performance
+        </h2>
+        <div class="metric-value" id="cpuOverall">--% Overall</div>
+      </div>
+      <div class="card-content">
+        <div class="stats-list" id="cpuCoresList">
+          <!-- CPU cores will be dynamically populated -->
+        </div>
+      </div>
+    </div>
+    
+    <!-- Docker Containers Card (Small - Top Right) -->
+    <div class="card card-small">
+      <div class="card-header">
+        <h2>
+          <div class="card-icon docker-icon"><i class="fab fa-docker"></i></div>
+          Docker Containers
+        </h2>
+        <div class="metric-value" id="dockerStatus">2 Running</div>
+      </div>
+      <div class="card-content">
+        <div class="stats-list" id="containersList">
+          <!-- Container 1 -->
+          <div class="stat-item">
+            <div class="stat-label">
+              <span><i class="fas fa-cube"></i> web-app</span>
+              <span class="stat-value">45.2%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill progress-container" style="width: 45.2%"></div>
+            </div>
+          </div>
+          
+          <!-- Container 2 -->
+          <div class="stat-item">
+            <div class="stat-label">
+              <span><i class="fas fa-database"></i> postgres-db</span>
+              <span class="stat-value">23.8%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill progress-container" style="width: 23.8%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ML Models Card (Small - Bottom Right) -->
+    <div class="card card-small">
+      <div class="card-header">
+        <h2>
+          <div class="card-icon ml-icon"><i class="fas fa-brain"></i></div>
+          ML Models
+        </h2>
+        <div class="metric-value" id="mlStatus">2 Active</div>
+      </div>
+      <div class="card-content">
+        <div class="stats-list" id="modelsList">
+          <!-- Model 1 -->
+          <div class="stat-item">
+            <div class="stat-label">
+              <span><i class="fas fa-eye"></i> vision-model</span>
+              <span class="stat-value">67.4%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill progress-model" style="width: 67.4%"></div>
+            </div>
+          </div>
+          
+          <!-- Model 2 -->
+          <div class="stat-item">
+            <div class="stat-label">
+              <span><i class="fas fa-comments"></i> nlp-model</span>
+              <span class="stat-value">34.6%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill progress-model" style="width: 34.6%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

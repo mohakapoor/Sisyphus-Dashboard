@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sisyphus Access</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <i class="fas fa-shield-alt login-icon"></i>
+                <h1>Sisyphus Access</h1>
+                <p class="login-subtitle">Enter authorization code</p>
+            </div>
+            
+            <form id="loginForm" class="login-form">
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <i class="fas fa-key input-icon"></i>
+                        <input 
+                            type="password" 
+                            id="accessCode" 
+                            name="access_code" 
+                            placeholder="Access Code"
+                            class="code-input"
+                            autocomplete="off"
+                            maxlength="20"
+                        >
+                    </div>
+                </div>
+                
+                <button type="submit" class="login-btn">
+                    <i class="fas fa-unlock-alt"></i>
+                    <span>Access Dashboard</span>
+                </button>
+                
+                <div id="errorMessage" class="error-message" style="display: none;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Invalid access code</span>
+                </div>
+            </form>
+        </div>
+        
+        <div class="login-footer">
+            <div class="system-info">
+                <i class="fas fa-server"></i>
+                <span>Sisyphus Monitoring System</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const accessCode = document.getElementById('accessCode').value;
+            const errorMessage = document.getElementById('errorMessage');
+            const submitBtn = this.querySelector('.login-btn');
+            
+            // Show loading state
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Verifying...</span>';
+            submitBtn.disabled = true;
+            errorMessage.style.display = 'none';
+            
+            try {
+                const response = await fetch('/authenticate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ access_code: accessCode })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Success - redirect to dashboard
+                    window.location.href = '/dashboard';
+                } else {
+                    // Show error
+                    errorMessage.style.display = 'flex';
+                    document.getElementById('accessCode').value = '';
+                    document.getElementById('accessCode').focus();
+                }
+            } catch (error) {
+                errorMessage.style.display = 'flex';
+            } finally {
+                // Reset button
+                submitBtn.innerHTML = '<i class="fas fa-unlock-alt"></i><span>Access Dashboard</span>';
+                submitBtn.disabled = false;
+            }
+        });
+        
+        // Focus on input when page loads
+        window.addEventListener('load', function() {
+            document.getElementById('accessCode').focus();
+        });
+        
+        // Clear error on input
+        document.getElementById('accessCode').addEventListener('input', function() {
+            document.getElementById('errorMessage').style.display = 'none';
+        });
+    </script>
+</body>
+</html>

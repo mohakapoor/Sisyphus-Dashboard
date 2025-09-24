@@ -11,10 +11,16 @@
   <div class="header">
     <div class="header-top">
       <h1>SISYPHUS DASHBOARD</h1>
-      <button id="logoutBtn" class="logout-btn" onclick="logout()">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>Logout</span>
-      </button>
+      <div class="header-actions">
+        <button id="shutdownBtn" class="shutdown-btn" onclick="confirmShutdown()" style="display: none;">
+          <i class="fas fa-power-off"></i>
+          <span>Shutdown</span>
+        </button>
+        <button id="logoutBtn" class="logout-btn" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </button>
+      </div>
     </div>
     <div class="status-bar">
       <div class="status-badge">

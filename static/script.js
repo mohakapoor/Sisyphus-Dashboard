@@ -130,6 +130,71 @@ function updateStatusBadges(data) {
     }
 }
 
+// Check user role and show admin features
+async function checkUserRole() {
+    try {
+        const response = await fetch('/api/stats');
+        if (response.ok) {
+            // If we can access stats, check if admin features should be shown
+            // We'll determine this by trying to access an admin endpoint
+            const adminResponse = await fetch('/api/admin/shutdown', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            // If admin endpoint doesn't return 403, user is admin
+            if (adminResponse.status !== 403) {
+                document.getElementById('shutdownBtn').style.display = 'inline-flex';
+            }
+        }
+    } catch (error) {
+        console.log('Role check failed:', error);
+    }
+}
+
+// Shutdown function (admin only)
+function confirmShutdown() {
+    if (confirm('⚠️ WARNING: This will shutdown the Raspberry Pi!\n\nAre you absolutely sure?')) {
+        if (confirm('🚨 FINAL CONFIRMATION: Shutdown Pi5 now?')) {
+            // Require re-authentication
+            const adminCode = prompt('🔐 SECURITY: Enter admin code to confirm shutdown:');
+            if (adminCode) {
+                shutdownPi(adminCode);
+            }
+        }
+    }
+}
+
+async function shutdownPi(adminCode) {
+    try {
+        const response = await fetch('/api/admin/shutdown', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                admin_code: adminCode
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert('🔴 Pi is shutting down securely...\nConnection will be lost shortly.');
+            // Redirect after alert
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 2000);
+        } else {
+            alert('❌ Shutdown failed: ' + data.error);
+        }
+    } catch (error) {
+        alert('❌ Shutdown request failed: ' + error.message);
+    }
+}
+
 // Logout function
 function logout() {
     // Show confirmation
@@ -141,4 +206,5 @@ function logout() {
 
 // Initial fetch and update every 3 seconds (lighter on Pi)
 fetchStats();
+checkUserRole(); // Check if user is admin and show shutdown button
 setInterval(fetchStats, 3000);

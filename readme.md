@@ -23,7 +23,7 @@ uptime                           # System uptime
 
 ## 🎯 Project Overview
 
-**Sisyphus Dashboard** is a cyberpunk-themed, glassmorphism-styled monitoring dashboard for Raspberry Pi 5. It provides real-time system statistics, Docker container monitoring, and ML model tracking through a modern web interface accessible globally via Cloudflare Tunnel.
+**Sisyphus Dashboard** is a monitoring dashboard for Raspberry Pi 5 hosted on it. It provides real-time system statistics, Docker container monitoring, and ML model tracking through a modern web interface accessible globally via Cloudflare Tunnel.
 
 
 

@@ -889,3 +889,37 @@ html, body {
     gap: 4px;
   }
 }
+
+/* Portainer Link Button Styles */
+.portainer-link-btn {
+  background: var(--gradient-cyan);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  box-shadow: 0 2px 4px rgba(0, 217, 255, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.portainer-link-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 217, 255, 0.3);
+  background: linear-gradient(135deg, #00E5FF, #8B5CF6);
+}
+
+.portainer-link-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 217, 255, 0.2);
+}
+
+/* Network icon style */
+.network-icon {
+  background: var(--gradient-orange);
+}

@@ -19,6 +19,10 @@ FLASK_DEBUG = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
 FLASK_HOST = os.getenv('FLASK_HOST')
 FLASK_PORT = int(os.getenv('FLASK_PORT'))
 
+# Domain configuration
+MAIN_DOMAIN = os.getenv('MAIN_DOMAIN')
+PORTAINER_DOMAIN = os.getenv('PORTAINER_DOMAIN')
+
 # Generate new secret key on each restart to invalidate all sessions
 import uuid
 app.secret_key = app.secret_key + str(uuid.uuid4())
@@ -66,7 +70,7 @@ def clear_admin_session():
 @app.before_request
 def force_https():
     if not request.is_secure and request.headers.get('X-Forwarded-Proto') != 'https':
-        if 'sisyphus.mohakapoor.in' in request.host:
+        if MAIN_DOMAIN and MAIN_DOMAIN in request.host:
             return redirect(request.url.replace('http://', 'https://'), code=301)
 
 # Add performance headers
@@ -143,6 +147,12 @@ def get_stats():
     if not is_viewer_or_admin():
         return jsonify({"error": "Not authenticated"}), 401
     data = stats.get_stats()
+    
+    # Add domain configuration for frontend
+    data["config"] = {
+        "portainer_url": f"https://{PORTAINER_DOMAIN}" if PORTAINER_DOMAIN else "https://localhost:9000"
+    }
+    
     return jsonify(data)
 
 # Admin check endpoint (no sensitive action)
@@ -200,7 +210,7 @@ def api_docs():
     docs = {
         "title": "Sisyphus Dashboard API",
         "version": "1.0.0",
-        "base_url": "https://sisyphus.mohakapoor.in",
+        "base_url": f"https://{MAIN_DOMAIN}" if MAIN_DOMAIN else "https://your-domain.com",
         "authentication": "Session-based with access codes",
         "endpoints": {
             "Authentication": {

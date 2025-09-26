@@ -3,95 +3,144 @@
 ## 🚀 Quick Service Management Commands
 
 ```bash
-# Service Control
-sudo systemctl start sisyphus     # Start service
-sudo systemctl stop sisyphus      # Stop service
-sudo systemctl restart sisyphus   # Restart service
-sudo systemctl status sisyphus    # Check status
+# Docker Container Management
+cd /home/todo/docker/sisyphus
+docker-compose up --build -d     # Build and start containers
+docker-compose down              # Stop containers
+docker-compose restart          # Restart containers
+docker-compose logs -f          # Follow container logs
 
-# Logs and Monitoring
-sudo journalctl -u sisyphus -f    # Follow real-time logs
-tail -f /home/todo/logs/flask.log # Flask application logs
-tail -f /home/todo/logs/tunnel.log # Cloudflare tunnel logs
+# Cloudflare Tunnel Service
+sudo systemctl status cloudflared    # Check tunnel status
+sudo journalctl -u cloudflared -f    # Follow tunnel logs
 
 # System Health
 vcgencmd measure_temp             # Check Pi temperature
 free -h                           # Memory usage
 df -h                            # Disk usage
 uptime                           # System uptime
+docker ps                        # Running containers
 ```
 
 ## 🎯 Project Overview
 
-**Sisyphus Dashboard** is a monitoring dashboard for Raspberry Pi 5 hosted on it. It provides real-time system statistics, Docker container monitoring, and ML model tracking through a modern web interface accessible globally via Cloudflare Tunnel.
+**Sisyphus Dashboard** is a containerized monitoring dashboard for Raspberry Pi 5. It provides real-time system statistics, live Docker container monitoring, and network activity tracking through a modern web interface accessible globally via Cloudflare Tunnel.
+
+### **Key Features**
+- 🖥️ **Real-time System Stats**: CPU, memory, disk, temperature monitoring
+- 🐳 **Live Container Stats**: Running and total container counts
+- 🌐 **Network Monitoring**: Upload/download bandwidth tracking  
+- 🔗 **Portainer Integration**: Direct link to container management
+- 🔐 **Secure Access**: Session-based authentication with role management
+- ☁️ **Global Access**: Cloudflare Tunnel with custom domain
 
 
 
 ## 🛠️ Technical Implementation
 
+### **Architecture**
+- **Frontend**: Responsive web interface with real-time updates
+- **Backend**: Flask API with system monitoring and Docker integration
+- **Containerization**: Docker Compose for service orchestration
+- **Networking**: Cloudflare Tunnel for secure external access
+- **Authentication**: Session-based with configurable access levels
+
 ### **File Structure**
 ```
 HomeApi/
 ├── app.py                 # Flask application & routes
+├── stats.py               # System & Docker monitoring
 ├── static/
-│   ├── styles.css        # All CSS styling
-│   └── script.js         # Frontend JavaScript
+│   ├── styles-v3.css     # Modern CSS styling
+│   └── script-v3.js      # Frontend JavaScript with live updates
 ├── templates/
 │   ├── index.html        # Main dashboard
 │   └── login.html        # Authentication page
 └── readme.md             # This documentation
 
-scripts/
-└── stats.py              # System monitoring (outside HomeApi)
+docker/sisyphus/
+├── docker-compose.yml    # Container orchestration
+├── Dockerfile            # Container build instructions
+└── requirements.txt      # Python dependencies
 
-startup/
-├── sisyphus.sh           # Service management script  
-└── sisyphus.service      # systemd service file
-
-logs/
-├── flask.log             # Flask application logs
-└── tunnel.log            # Cloudflare tunnel logs
+.cloudflared/
+└── sisyphus-config.yml   # Tunnel configuration (domains routing)
 ```
 
 ### **API Endpoints**
 - `GET /` - Root redirect logic
-- `GET /login` - Authentication page
+- `GET /login` - Authentication page  
 - `POST /authenticate` - Login processing
 - `GET /dashboard` - Main dashboard (protected)
 - `GET /logout` - Session termination
-- `GET /api/stats` - System data API (protected)
+- `GET /api/stats` - System & container data API (protected)
+- `GET /api/docs` - API documentation
+- `POST /api/admin/shutdown` - Pi shutdown (admin only)
 - `GET /static/<file>` - Static file serving
 
 ### **Real-time Updates**
-- **JavaScript polling** every 3 seconds
-- **Fetch API** for data retrieval
-- **DOM manipulation** for UI updates
-- **Error handling** for failed requests
+- **JavaScript polling** every 3 seconds for live data
+- **System metrics**: CPU cores, memory, disk, temperature
+- **Container stats**: Running/total container counts via Docker API
+- **Network activity**: Upload/download bandwidth tracking
+- **Error handling** with graceful fallbacks
+
+### **Environment Variables**
+Required variables in `/home/todo/HomeApi/.env`:
+```bash
+# Flask Configuration
+FLASK_SECRET_KEY=your-secret-key
+FLASK_DEBUG=False
+FLASK_HOST=0.0.0.0
+FLASK_PORT=5000
+
+# Authentication (NO DEFAULTS - must be set)
+VIEWER_ACCESS_CODE=your-viewer-code
+ADMIN_ACCESS_CODE=your-admin-code
+
+# Domain Configuration
+MAIN_DOMAIN=your-main-domain.com
+PORTAINER_DOMAIN=your-portainer-domain.com
+```
 
 ## 🚨 Troubleshooting
 
 ### **Common Issues**
 
-#### **CSS Not Loading on Tunnel**
-- **Cause:** Static file routing
-- **Fix:** Explicit static route in Flask app
+#### **Container Won't Start**
+- **Cause:** Build errors or port conflicts
+- **Fix:** Check logs with `docker-compose logs` and ensure port 5000 is free
 
-#### **Authentication Not Working**
-- **Cause:** Session configuration
-- **Fix:** Ensure `app.secret_key` is set
+#### **Container Stats Not Showing**
+- **Cause:** Docker socket not mounted or permissions
+- **Fix:** Ensure `/var/run/docker.sock` is mounted in docker-compose.yml
 
-#### **Service Won't Start**
-- **Cause:** File permissions or paths
-- **Fix:** Check executable permissions and file paths
+#### **Static Files Not Loading**
+- **Cause:** Cache issues or incorrect paths
+- **Fix:** Hard refresh browser or rebuild container with `--no-cache`
+
+#### **Authentication Issues**
+- **Cause:** Missing environment variables
+- **Fix:** Verify `.env` file exists with all required variables (see Environment Variables section)
+
+#### **Domain Configuration Issues**
+- **Cause:** Missing domain environment variables
+- **Fix:** Set `MAIN_DOMAIN` and `PORTAINER_DOMAIN` in `.env` file
 
 ## 🔄 Future Enhancements
 
+### **Potential Improvements**
+- **Historical data storage** with lightweight database
+- **WebSocket integration** for instant updates (currently 3s polling)
+- **Container resource monitoring** (CPU/memory per container)
+- **Alert system** for resource thresholds
+- **Multiple Pi deployment** with centralized monitoring
 
-### **Scalability Considerations**
-- **Database integration** for historical data
-- **WebSocket updates** for real-time data
-- **Load balancing** for multiple Pi deployment
-- **Containerization** with Docker
+### **Security Notes**
+- **Environment variables**: All sensitive data stored in `.env` (never committed)
+- **Docker socket exposure**: Limited to read-only container information
+- **Session management**: Regenerated secrets and single admin sessions
+- **Tunnel security**: Cloudflare handles TLS termination and DDoS protection
 
 ---
 

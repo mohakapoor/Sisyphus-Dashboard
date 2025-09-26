@@ -20,7 +20,16 @@ async function fetchStats() {
         // Update all stat displays
         updateStats(data);
         
-        // Docker and ML models are now static - no updates needed
+        // Update network stats
+        updateNetworkStats(data);
+        
+        // Update container stats
+        updateContainerStats(data);
+        
+        // Store portainer URL for later use
+        if (data.config && data.config.portainer_url) {
+            window.portainerUrl = data.config.portainer_url;
+        }
 
     } catch (err) {
         console.error('Error fetching stats:', err);
@@ -193,6 +202,31 @@ function logout() {
         // Redirect to logout route
         window.location.href = '/logout';
     }
+}
+
+// Update network stats
+function updateNetworkStats(data) {
+    if (data.network_bytes) {
+        const rxMB = (data.network_bytes.rx / (1024 * 1024)).toFixed(1);
+        const txMB = (data.network_bytes.tx / (1024 * 1024)).toFixed(1);
+        
+        document.getElementById('networkRx').textContent = rxMB + ' MB';
+        document.getElementById('networkTx').textContent = txMB + ' MB';
+    }
+}
+
+// Update container stats
+function updateContainerStats(data) {
+    if (data.containers) {
+        document.getElementById('containersRunning').textContent = data.containers.running;
+        document.getElementById('containersTotal').textContent = data.containers.total;
+    }
+}
+
+// Open Portainer in new tab
+function openPortainer() {
+    const portainerUrl = window.portainerUrl || 'https://localhost:9000';
+    window.open(portainerUrl, '_blank');
 }
 
 // Initial fetch and update every 3 seconds (lighter on Pi)

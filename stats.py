@@ -4,6 +4,7 @@ import psutil
 import json
 import time
 import os
+import docker
 
 # Simple caching to reduce CPU load
 _stats_cache = None
@@ -25,6 +26,20 @@ def get_cpu_temp():
             temp_milli = int(f.read().strip())
             return round(temp_milli / 1000, 1)
     return None
+
+def get_docker_stats():
+    try:
+        client = docker.from_env()
+        containers = client.containers.list(all=True)
+        running_containers = [c for c in containers if c.status == 'running']
+        
+        return {
+            "running": len(running_containers),
+            "total": len(containers)
+        }
+    except Exception as e:
+        # If Docker is not available or there's an error, return default values
+        return {"running": 0, "total": 0}
 
 
 def get_stats():
@@ -61,6 +76,10 @@ def get_stats():
     # Network bytes
     net = psutil.net_io_counters()
     stats["network_bytes"] = {"rx": net.bytes_recv, "tx": net.bytes_sent}
+
+    # Docker container stats
+    docker_stats = get_docker_stats()
+    stats["containers"] = docker_stats
 
     # Cache the results
     _stats_cache = stats

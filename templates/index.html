@@ -63,72 +63,56 @@
       </div>
     </div>
     
-    <!-- Docker Containers Card (Small - Top Right) -->
+    <!-- Portainer Management Card (Small - Right) -->
     <div class="card card-small">
       <div class="card-header">
         <h2>
           <div class="card-icon docker-icon"><i class="fab fa-docker"></i></div>
-          Docker Containers
+          Portainer
         </h2>
-        <div class="metric-value" id="dockerStatus">2 Running</div>
+        <button class="metric-value portainer-link-btn" onclick="openPortainer()">
+          <i class="fas fa-external-link-alt"></i>
+        </button>
       </div>
       <div class="card-content">
-        <div class="stats-list" id="containersList">
-          <!-- Container 1 -->
+        <div class="stats-list" id="containerStats">
           <div class="stat-item">
             <div class="stat-label">
-              <span><i class="fas fa-cube"></i> web-app</span>
-              <span class="stat-value">45.2%</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill progress-container" style="width: 45.2%"></div>
+              <span><i class="fas fa-play"></i> Running</span>
+              <span class="stat-value" id="containersRunning">-- </span>
             </div>
           </div>
-          
-          <!-- Container 2 -->
           <div class="stat-item">
             <div class="stat-label">
-              <span><i class="fas fa-database"></i> postgres-db</span>
-              <span class="stat-value">23.8%</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill progress-container" style="width: 23.8%"></div>
+              <span><i class="fas fa-box"></i> Total</span>
+              <span class="stat-value" id="containersTotal">-- </span>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ML Models Card (Small - Bottom Right) -->
+    <!-- System Network Card (Small - Bottom Right) -->
     <div class="card card-small">
       <div class="card-header">
         <h2>
-          <div class="card-icon ml-icon"><i class="fas fa-brain"></i></div>
-          ML Models
+          <div class="card-icon network-icon"><i class="fas fa-network-wired"></i></div>
+          Network Activity
         </h2>
-        <div class="metric-value" id="mlStatus">2 Active</div>
+        <div class="metric-value" id="networkStatus">Active</div>
       </div>
       <div class="card-content">
-        <div class="stats-list" id="modelsList">
-          <!-- Model 1 -->
+        <div class="stats-list" id="networkList">
           <div class="stat-item">
             <div class="stat-label">
-              <span><i class="fas fa-eye"></i> vision-model</span>
-              <span class="stat-value">67.4%</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill progress-model" style="width: 67.4%"></div>
+              <span><i class="fas fa-download"></i> Download</span>
+              <span class="stat-value" id="networkRx">-- MB</span>
             </div>
           </div>
-          
-          <!-- Model 2 -->
           <div class="stat-item">
             <div class="stat-label">
-              <span><i class="fas fa-comments"></i> nlp-model</span>
-              <span class="stat-value">34.6%</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill progress-model" style="width: 34.6%"></div>
+              <span><i class="fas fa-upload"></i> Upload</span>
+              <span class="stat-value" id="networkTx">-- MB</span>
             </div>
           </div>
         </div>

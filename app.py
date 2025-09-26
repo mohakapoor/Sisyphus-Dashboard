@@ -12,14 +12,17 @@ import stats
 
 app = Flask(__name__)
 
-# Production optimizations
-app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000  # 1 year cache for static files
+# No production optimizations - keep it simple
 
 # Load configuration from environment variables - NO FALLBACKS!
 app.secret_key = os.getenv('FLASK_SECRET_KEY')
 FLASK_DEBUG = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
 FLASK_HOST = os.getenv('FLASK_HOST')
 FLASK_PORT = int(os.getenv('FLASK_PORT'))
+
+# Generate new secret key on each restart to invalidate all sessions
+import uuid
+app.secret_key = app.secret_key + str(uuid.uuid4())
 
 # Access codes from environment variables - NO FALLBACKS!
 VIEWER_CODE = os.getenv('VIEWER_ACCESS_CODE')
@@ -69,25 +72,20 @@ def force_https():
 
 # Add performance headers
 @app.after_request
-def add_performance_headers(response):
-    # Enable compression
-    if 'gzip' not in response.headers.get('Content-Encoding', ''):
-        response.headers['Vary'] = 'Accept-Encoding'
-    
-    # Security headers for production
+def add_security_headers(response):
+    # Basic security headers only
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['X-XSS-Protection'] = '1; mode=block'
     response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     
-    # Cache static files aggressively
-    if request.endpoint == 'static' or request.path.startswith('/static/'):
-        response.headers['Cache-Control'] = 'public, max-age=31536000'  # 1 year
-        response.headers['Expires'] = (datetime.utcnow() + timedelta(days=365)).strftime('%a, %d %b %Y %H:%M:%S GMT')
-    
-    # Cache API responses briefly
-    elif request.path == '/api/stats':
-        response.headers['Cache-Control'] = 'private, max-age=2'  # 2 seconds
+    # NUCLEAR OPTION: Force no caching for static files
+    if request.endpoint == 'static':
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        response.headers['Last-Modified'] = datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')
+        response.headers['ETag'] = str(hash(str(datetime.utcnow())))
     
     return response
 
@@ -139,9 +137,7 @@ def logout():
     session.pop('session_id', None)
     return redirect(url_for('home'))
 
-@app.route('/static/<path:filename>')
-def serve_static(filename):
-    return send_from_directory(app.static_folder, filename)
+# Removed custom static route - let Flask handle it normally
 
 @app.route("/api/stats", methods=["GET"])
 def get_stats():
@@ -149,6 +145,14 @@ def get_stats():
         return jsonify({"error": "Not authenticated"}), 401
     data = stats.get_stats()
     return jsonify(data)
+
+# Admin check endpoint (no sensitive action)
+@app.route("/api/admin/check", methods=["GET"])
+def admin_check():
+    if is_admin():  # Same check as title uses
+        return jsonify({"admin": True})
+    else:
+        return jsonify({"admin": False}), 403
 
 # Admin-only API endpoints
 @app.route("/api/admin/shutdown", methods=["POST"])
@@ -187,6 +191,78 @@ def admin_restart():
         return jsonify({"error": "Admin access required"}), 403
     # Future: Add restart functionality
     return jsonify({"message": "Restart functionality coming soon", "admin": True})
+
+@app.route("/api/docs")
+def api_docs():
+    """API Documentation page"""
+    if not is_authenticated():
+        return redirect(url_for('login_page'))
+    
+    docs = {
+        "title": "Sisyphus Dashboard API",
+        "version": "1.0.0",
+        "base_url": "https://sisyphus.mohakapoor.in",
+        "authentication": "Session-based with access codes",
+        "endpoints": {
+            "Authentication": {
+                "POST /authenticate": {
+                    "description": "Login with access code",
+                    "body": {"access_code": "string"},
+                    "responses": {
+                        "200": {"success": True, "role": "admin|viewer"},
+                        "401": {"success": False, "error": "Invalid access code"},
+                        "409": {"success": False, "error": "Admin session already active"}
+                    }
+                },
+                "GET /logout": {
+                    "description": "Logout and clear session",
+                    "responses": {"302": "Redirect to login"}
+                }
+            },
+            "Data": {
+                "GET /api/stats": {
+                    "description": "Get system statistics",
+                    "auth_required": "viewer or admin",
+                    "response": {
+                        "cpu_percent": "number",
+                        "cpu_cores": ["number"],
+                        "memory_percent": "number", 
+                        "disk_percent": "number",
+                        "temperature": "number",
+                        "uptime": "string",
+                        "hostname": "string"
+                    }
+                }
+            },
+            "Admin": {
+                "GET /api/admin/check": {
+                    "description": "Check if user has admin privileges",
+                    "auth_required": "admin session",
+                    "responses": {
+                        "200": {"admin": True},
+                        "403": {"admin": False}
+                    }
+                },
+                "POST /api/admin/shutdown": {
+                    "description": "Shutdown the Raspberry Pi",
+                    "auth_required": "admin session + re-authentication",
+                    "body": {"admin_code": "string"},
+                    "responses": {
+                        "200": {"success": True, "message": "Pi shutdown initiated securely"},
+                        "403": {"error": "Valid admin session required"}
+                    }
+                },
+                "POST /api/admin/restart": {
+                    "description": "Restart the Raspberry Pi (not implemented)",
+                    "auth_required": "admin session",
+                    "responses": {
+                        "200": {"message": "Restart functionality coming soon"}
+                    }
+                }
+            }
+        }
+    }
+    return jsonify(docs)
 
 if __name__ == "__main__":
     # Use environment variables for Flask configuration

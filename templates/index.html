@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🍓 Sisyphus Dashboard</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles-v3.css') }}">
 </head>
 <body>
 <div class="main-container">
   <div class="header">
     <div class="header-top">
-      <h1>SISYPHUS DASHBOARD</h1>
+      <h1 id="dashboardTitle">{% if user_role == 'admin' %}ADMIN SISYPHUS DASHBOARD{% else %}SISYPHUS DASHBOARD{% endif %}</h1>
       <div class="header-actions">
         <button id="shutdownBtn" class="shutdown-btn" onclick="confirmShutdown()" style="display: none;">
           <i class="fas fa-power-off"></i>
@@ -137,6 +137,6 @@
   </div>
 </div>
 
-<script src="{{ url_for('static', filename='script.js') }}"></script>
+<script src="{{ url_for('static', filename='script-v3.js') }}"></script>
 </body>
 </html>

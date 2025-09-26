@@ -133,20 +133,13 @@ function updateStatusBadges(data) {
 // Check user role and show admin features
 async function checkUserRole() {
     try {
-        const response = await fetch('/api/stats');
-        if (response.ok) {
-            // If we can access stats, check if admin features should be shown
-            // We'll determine this by trying to access an admin endpoint
-            const adminResponse = await fetch('/api/admin/shutdown', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
-            
-            // If admin endpoint doesn't return 403, user is admin
-            if (adminResponse.status !== 403) {
-                document.getElementById('shutdownBtn').style.display = 'inline-flex';
+        // Use dedicated admin check endpoint
+        const adminResponse = await fetch('/api/admin/check');
+        
+        if (adminResponse.ok) {
+            const data = await adminResponse.json();
+            if (data.admin === true) {
+                document.getElementById('shutdownBtn').style.display = 'flex';
             }
         }
     } catch (error) {
@@ -157,12 +150,10 @@ async function checkUserRole() {
 // Shutdown function (admin only)
 function confirmShutdown() {
     if (confirm('⚠️ WARNING: This will shutdown the Raspberry Pi!\n\nAre you absolutely sure?')) {
-        if (confirm('🚨 FINAL CONFIRMATION: Shutdown Pi5 now?')) {
-            // Require re-authentication
-            const adminCode = prompt('🔐 SECURITY: Enter admin code to confirm shutdown:');
-            if (adminCode) {
-                shutdownPi(adminCode);
-            }
+        // Require re-authentication
+        const adminCode = prompt('🔐 SECURITY: Enter admin code to confirm shutdown:');
+        if (adminCode) {
+            shutdownPi(adminCode);
         }
     }
 }

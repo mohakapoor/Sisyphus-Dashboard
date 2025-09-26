@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
-sys.path.append(os.path.expanduser("~/scripts"))
 import stats
 
 app = Flask(__name__)
